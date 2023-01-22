@@ -1,5 +1,7 @@
 # Maplecroft Frontend Development Test
 
+![image](https://user-images.githubusercontent.com/43283965/213940871-87d6b2aa-1955-4209-b2c9-c9e80819818a.png)
+
 ## Quick Start
 
 ```
