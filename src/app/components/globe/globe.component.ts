@@ -1,4 +1,5 @@
-import { switchMap, combineLatest, Observable } from 'rxjs';
+import { ICountryStats } from './../../models/country-stats';
+import { switchMap, combineLatest, Observable, map } from 'rxjs';
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { GlobeDataService } from 'src/app/apis/globe-data.service';
 import * as d3 from 'd3';
@@ -14,7 +15,7 @@ import * as R from 'ramda';
 export class GlobeComponent implements OnInit {
   @Output() countryDetails = new EventEmitter<string | undefined>();
 
-  data$ = combineLatest(
+  data$: Observable<[IScoreData, ICountryStats]> = combineLatest(
     this.GlobeData.countryData$,
     this.GlobeData.countryStats$
   );
@@ -24,8 +25,6 @@ export class GlobeComponent implements OnInit {
       const { projection, path, svg, globe, map } = this.buildMap(countryData);
 
       this.buildCountries(countryData, map, path, countryStats);
-
-      return new Observable<any>(o => o.next([]))
     });
   }
 
@@ -115,7 +114,9 @@ export class GlobeComponent implements OnInit {
       .attr('class', (d: any) => 'country_' + d.properties.ISO_A2)
       .attr('d', path)
       .attr('fill', (d: any) =>
-        this.getScoreColour(this.getCountryScore(countryData, d.properties.ISO_A2))
+        this.getScoreColour(
+          this.getCountryScore(countryData, d.properties.ISO_A2)
+        )
       )
       .style('stroke', 'black')
       .style('stroke-width', 0.3)
@@ -125,7 +126,9 @@ export class GlobeComponent implements OnInit {
       );
   }
 
-  getScoreColour(score: number | null, defaultColor = 'LightGray') {
+  getScoreColour(score: number | null | string, defaultColor = 'LightGray', redactedColor = '#744') {
+    if(score == 'redacted') return redactedColor;
+
     if (R.isNil(score) || Number.isNaN(score) || score > 10) {
       return defaultColor;
     }
@@ -141,18 +144,35 @@ export class GlobeComponent implements OnInit {
     return '#d6e040';
   }
 
-  private getCountryScore(countryData: IScoreData, countryCode: string): number | undefined {
+  private getCountryScore(
+    countryData: IScoreData,
+    countryCode: string
+  ): number | string | undefined {
     const country = countryData[countryCode];
-    return country ? country.score : undefined;
+
+    if(!country) return undefined;
+
+    if(!country.entitled && !!country.score) return 'redacted';
+
+    return country.score;
   }
 
-  private showDetails(countryData: IScoreData, countryCode: string, countryName: string) {
+  private showDetails(
+    countryData: IScoreData,
+    countryCode: string,
+    countryName: string
+  ) {
     const country = countryData[countryCode];
 
     if (!country) {
       this.countryDetails = undefined;
       return;
     }
+
+    if(!country.entitled && !!country.score) {
+      this.countryDetails.emit(`${countryName}: Redacted`);
+      return;
+    };
 
     this.countryDetails.emit(`${countryName}: ${country.score.toFixed(2)}`);
   }
