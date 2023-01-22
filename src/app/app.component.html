@@ -1,8 +1,7 @@
 <div class="globe-container">
-  <div class="globe" id="globe">
-  </div>
+  <app-globe (countryDetails)="countryDetails = $event"></app-globe>
   <div class="country-details">
-      <strong>Client's Risk Portfolio</strong>
-      {{ countryDetails }}
+    <strong>Client's Risk Portfolio</strong>
+    {{ countryDetails }}
   </div>
 </div>

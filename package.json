@@ -23,8 +23,8 @@
     "country-iso-3-to-2": "^1.1.1",
     "d3": "^4.0.0",
     "ramda": "^0.27.1",
-    "rxjs": "~6.6.0",
-    "tslib": "^2.0.0",
+    "rxjs": "~7.5.0",
+    "tslib": "^2.4.1",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
